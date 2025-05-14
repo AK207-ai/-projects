@@ -1,0 +1,65 @@
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+ 'Volume'
+data = pd.read_csv("stock_data.csv")
+
+
+print("First 5 rows of the dataset:")
+print(data.head())
+
+
+print("\nChecking for missing values:")
+print(data.isnull().sum())
+
+data = data.dropna()
+
+data['Date'] = pd.to_datetime(data['Date'])
+
+data = data.sort_values('Date')
+
+data.set_index('Date', inplace=True)
+
+
+print("\nSummary statistics of the dataset:")
+print(data.describe())
+
+
+data['Daily Return'] = data['Close'].pct_change()
+
+data['50-Day MA'] = data['Close'].rolling(window=50).mean()
+data['200-Day MA'] = data['Close'].rolling(window=200).mean()
+
+
+plt.figure(figsize=(12, 6))
+plt.plot(data.index, data['Close'], label='Closing Price', color='blue')
+plt.plot(data.index, data['50-Day MA'], label='50-Day MA', color='orange')
+plt.plot(data.index, data['200-Day MA'], label='200-Day MA', color='green')
+plt.title('Stock Closing Price and Moving Averages')
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.legend()
+plt.show()
+
+
+data['Volatility'] = data['Daily Return'].rolling(window=30).std()
+
+
+plt.figure(figsize=(12, 6))
+plt.plot(data.index, data['Volatility'], label='30-Day Volatility', color='red')
+plt.title('Stock Volatility')
+plt.xlabel('Date')
+plt.ylabel('Volatility')
+plt.legend()
+plt.show()
+
+
+correlation_matrix = data[['Open', 'High', 'Low', 'Close', 'Volume']].corr()
+print("\nCorrelation matrix:")
+print(correlation_matrix)
+
+data.to_csv("cleaned_stock_data.csv")
+
+print("\nAnalysis complete. Cleaned dataset saved as 'cleaned_stock_data.csv'.")
